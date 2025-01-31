@@ -25,7 +25,11 @@ class ActionViewController: UIViewController {
                 // ask the item provider to actually provide us with its item, it uses a closure so this code executes asynchronously. The method will carry on executing while the item provider is busy loading and sending us its data.
                 // accept two parameters: the dictionary that was given to us by the item provider, and any error that occurred.
                 itemProvider.loadItem(forTypeIdentifier: kUTTypePropertyList as String) { [weak self] (dict, error) in
-                    // do stuff!
+                    guard let itemDictionary = dict as? NSDictionary else { return }
+                    //  data sent from JavaScript, and stored in a special key called NSExten...ultsKey
+                    // typecast javaScriptValues as an NSDictionary again so we can pull out values using keys
+                    guard let javaScriptValues = itemDictionary[NSExtensionJavaScriptPreprocessingResultsKey] as? NSDictionary else { return }
+                    print(javaScriptValues)
                 }
             }
         }

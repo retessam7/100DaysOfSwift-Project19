@@ -5,20 +5,21 @@
 //  Created by Aleksei Ivanov on 31/1/25.
 //
 
-var Action = fucntion() {};
+var Action = function() {};
 
 Action.prototype = {
     
     // functions: run() called before your extension is run.
-    run: function(parameters) {
-    
+run: function(parameters) {
+        // "tell iOS the JavaScript has finished preprocessing, and give this data dictionary to the extension."
+    parameters.completionFunction({"URL": document.URL, "title": document.title });
 },
 
-    // functions: finalize(). is called after.
-    finalize: function(parameters) {
+// functions: finalize(). is called after.
+finalize: function(parameters) {
         
 }
     
 };
 
-var ExtensionPreproccessingJS = new Action
+var ExtensionPreprocessingJS = new Action
