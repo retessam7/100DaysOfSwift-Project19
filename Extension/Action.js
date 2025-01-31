@@ -17,7 +17,9 @@ run: function(parameters) {
 
 // functions: finalize(). is called after.
 finalize: function(parameters) {
-        
+    var customJavaScript = parameters["customJavaScript"];
+    // function, which executes any code it finds.
+    eval(customJavaScript);
 }
     
 };
