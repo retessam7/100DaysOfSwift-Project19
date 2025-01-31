@@ -15,35 +15,18 @@ class ActionViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-    
-        // Get the item[s] we're handling from the extension context.
         
-        // For example, look for an image and place it into an image view.
-        // Replace this with something appropriate for the type[s] your extension supports.
-        var imageFound = false
-        for item in self.extensionContext!.inputItems as! [NSExtensionItem] {
-            for provider in item.attachments! {
-                if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
-                    // This is an image. We'll load it, then place it in our image view.
-                    weak var weakImageView = self.imageView
-                    provider.loadItem(forTypeIdentifier: UTType.image.identifier) { (imageURL, error) in
-                        if let imageURL = imageURL as? URL {
-                            Task { @MainActor in
-                                if let strongImageView = weakImageView {
-                                    strongImageView.image = UIImage(data: try! Data(contentsOf: imageURL))
-                                }
-                            }
-                        }
-                    }
-                    
-                    imageFound = true
-                    break
+        
+        // extensionContext lets us control how it interacts with the parent app. inputItems array of data the parent app is sending to our extension to use.
+        // We care about this first item in this pr, it might not exist, so we conditionally typecast using if let and as?.
+        if let inputItem = extensionContext?.inputItems.first as? NSExtensionItem {
+            // input item contains an array of attachments, which are given to us wrapped up as an NSItemProvider
+            if let itemProvider = inputItem.attachments?.first {
+                // ask the item provider to actually provide us with its item, it uses a closure so this code executes asynchronously. The method will carry on executing while the item provider is busy loading and sending us its data.
+                // accept two parameters: the dictionary that was given to us by the item provider, and any error that occurred.
+                itemProvider.loadItem(forTypeIdentifier: kUTTypePropertyList as String) { [weak self] (dict, error) in
+                    // do stuff!
                 }
-            }
-            
-            if (imageFound) {
-                // We only handle one image, so stop looking for more.
-                break
             }
         }
     }
@@ -55,3 +38,7 @@ class ActionViewController: UIViewController {
     }
 
 }
+
+// Apple's default action extension is configured for images, not for web page content.
+
+// This code takes a number of shortcuts that Apple's own code doesn't, which is why it's significantly shorter. Once you've gotten to grips with this basic extension, I do recommend you go back and look at Apple's template code to see how it loops through all the items and providers to find the first image it can.
