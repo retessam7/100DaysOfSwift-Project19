@@ -44,6 +44,12 @@ class ActionViewController: UIViewController {
         }
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done))
+        
+        // ask to be told when the keyboard state changes by using a new class
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        
     }
     
     // just the reverse of what we are doing inside viewDidLoad().
@@ -63,6 +69,30 @@ class ActionViewController: UIViewController {
         
         // returning our NSExtensionItem.
         extensionContext?.completeRequest(returningItems: [item])
+    }
+    
+    @objc func adjustForKeyboard(notification: Notification) {
+        // the dictionary will contain a key telling us the frame of the keyboard after it has finished animating
+        // Obj-C arrays and dictionaries couldn't contain structures like CGRect, special class called NSValue that as a wrapper around structures so they could be put into dictionaries and arrays
+        guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+        
+        let keyboardScreenEndFrame = keyboardValue.cgRectValue
+        // we need to convert the rectangle to our view's co-ordinates because rotation isn't factored into the frame
+        // (if the user is in landscape we'll have the width and height flipped)
+        let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: view.window)
+        
+        // indent the edges of our text view so that it appears to occupy less space even though its constraints are still edge to edge in the view.
+        if notification.name == UIResponder.keyboardWillHideNotification {
+            script.contentInset = .zero
+        } else {
+            script.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height - view.safeAreaInsets.bottom, right: 0)
+        }
+        
+        // make the text view scroll so that the text entry cursor is visible
+        script.scrollIndicatorInsets = script.contentInset
+        
+        let selectedRange = script.selectedRange
+        script.scrollRangeToVisible(selectedRange)
     }
 }
 
