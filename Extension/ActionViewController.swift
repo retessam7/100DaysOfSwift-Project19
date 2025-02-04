@@ -38,6 +38,13 @@ class ActionViewController: UIViewController {
                     DispatchQueue.main.async {
                         // change the UI on the main thread
                         self?.title = self?.pageTitle
+                        
+                        // download saved javaScript
+                        // .host — это свойство URL, которое возвращает доменное имя сайта.
+                        if let host = URL(string: self?.pageURL ?? "")?.host {
+                            let defaults = UserDefaults.standard
+                            self?.script.text = defaults.string(forKey: host) ?? ""
+                        }
                     }
                 }
             }
@@ -56,6 +63,11 @@ class ActionViewController: UIViewController {
     
     // just the reverse of what we are doing inside viewDidLoad().
     @IBAction func done() {
+        guard let host = URL(string: pageURL)?.host else { return }
+        
+        let defaults = UserDefaults.standard
+        defaults.set(script.text, forKey: host)
+        
         // on our extension context will cause the extension to be closed, returning back to the parent app
         // it will pass back to the parent app any items that we specify, which in the current code is the same items that were sent in
         // object that will host our items
@@ -103,9 +115,11 @@ class ActionViewController: UIViewController {
             self?.script.text = "alert(document.title);"
             self?.done()
         })
-        
+
         present(ac, animated: true)
     }
+    
+    
 }
 
 // user has written their code in our extension, tapped Done, and it gets executed in Safari using eval(). If you want to give it a try, enter the code alert(document.title); into the extension
