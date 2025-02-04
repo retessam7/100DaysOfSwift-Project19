@@ -50,6 +50,8 @@ class ActionViewController: UIViewController {
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
         
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Examples", style: .plain, target: self, action: #selector(exampleScripts))
+        
     }
     
     // just the reverse of what we are doing inside viewDidLoad().
@@ -93,6 +95,16 @@ class ActionViewController: UIViewController {
         
         let selectedRange = script.selectedRange
         script.scrollRangeToVisible(selectedRange)
+    }
+    
+    @objc func exampleScripts() {
+        let ac = UIAlertController(title: "Script examples", message: nil, preferredStyle: .actionSheet)
+        ac.addAction(UIAlertAction(title: "alert(document.title);", style: .default) { [weak self] _ in
+            self?.script.text = "alert(document.title);"
+            self?.done()
+        })
+        
+        present(ac, animated: true)
     }
 }
 
